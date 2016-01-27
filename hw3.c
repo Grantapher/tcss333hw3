@@ -14,12 +14,8 @@
 
 void initializeArrays(char** names, int** ranks) {
     int i, j;
-
     for (i = 0; i < MAX_NUM_NAMES; i++) {
         names[i] = NULL;
-    }
-
-    for (i = 0; i < MAX_NUM_NAMES; i++) {
         ranks[i] = (int*) malloc(sizeof(int) * MAX_NUM_YEARS);
         for (j = 0; j < MAX_NUM_YEARS; j++) {
             ranks[i][j] = -1;
@@ -72,6 +68,7 @@ void readInputFile(char** names, int** ranks, int yearIndex) {
         parseLine(names, ranks, yearIndex, line);
     }
     free(line);
+    fclose(in);
 }
 
 void readInputFiles(char** names, int** ranks) {
@@ -83,23 +80,44 @@ void readInputFiles(char** names, int** ranks) {
 
 
 void swap(char** names, int** ranks, int indexTo, int indexFrom) {
+    int* tempInts = ranks[indexTo];
+    char* tempChars = names[indexTo];
 
+    ranks[indexTo] = ranks[indexFrom];
+    names[indexTo] = names[indexFrom];
+
+    ranks[indexFrom] = tempInts;
+    names[indexFrom] = tempChars;
 }
 
 void sortArrays(char** names, int** ranks) {
-
+    int i, j;
+    for (i = 0; NULL != names[i]; i++) {
+        for (j = i; 0 < j && 0 > strcmp(names[j], names[j - 1]); j--) {
+            swap(names, ranks, j, j - 1);
+        }
+    }
 }
 
 void outputToFile(char** names, int** ranks) {
+    FILE* out = fopen("summary.csv", "w");
     int i, j;
-    for (i = 0; NULL != names[i]; i++) {
-        printf("%4d: %s",i, names[i]);
-        for (j = 0; j < MAX_NUM_YEARS; j++) {
-            if(-1 == ranks[i][j]) printf(",");
-            else printf(",%d", ranks[i][j]);
-        }
-        printf("\n");
+    fprintf(out, "Name");
+    for(i = 0; i < 11; i++) {
+        fprintf(out, ",%d", 1910 + 10 * i);
     }
+    fprintf(out, "\n");
+
+    for (i = 0; NULL != names[i]; i++) {
+        fprintf(out, "%s", names[i]);
+        for (j = 0; j < MAX_NUM_YEARS; j++) {
+            if(-1 == ranks[i][j]) fprintf(out, ",");
+            else fprintf(out, ",%d", ranks[i][j]);
+        }
+        fprintf(out, "\n");
+    }
+
+    fclose(out);
 }
 
 void destroy(char** names, int** ranks) {
